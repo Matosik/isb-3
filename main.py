@@ -1,12 +1,8 @@
 import os
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding as asym_padding
+from cryptography.hazmat.primitives import padding as sym_padding, serialization, hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, hmac
-from getpass import getpass
-
 
 class HybridEncryption:
     def __init__(self):
@@ -22,8 +18,8 @@ class HybridEncryption:
     def rsa_encrypt(self, plaintext, public_key):
         encrypted = public_key.encrypt(
             plaintext,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            asym_padding.OAEP(
+                mgf=asym_padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
                 label=None
             )
@@ -33,8 +29,8 @@ class HybridEncryption:
     def rsa_decrypt(self, ciphertext, private_key):
         decrypted = private_key.decrypt(
             ciphertext,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            asym_padding.OAEP(
+                mgf=asym_padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
                 label=None
             )
@@ -44,15 +40,23 @@ class HybridEncryption:
     def camellia_encrypt(self, plaintext, key, iv):
         cipher = Cipher(algorithms.Camellia(key), modes.CBC(iv), backend=self.backend)
         encryptor = cipher.encryptor()
-        ciphertext = encryptor.update(plaintext) + encryptor.finalize()
+
+        padder = sym_padding.PKCS7(128).padder()
+        padded_plaintext = padder.update(plaintext) + padder.finalize()
+
+        ciphertext = encryptor.update(padded_plaintext) + encryptor.finalize()
         return ciphertext
 
     def camellia_decrypt(self, ciphertext, key, iv):
         cipher = Cipher(algorithms.Camellia(key), modes.CBC(iv), backend=self.backend)
         decryptor = cipher.decryptor()
-        decrypted = decryptor.update(ciphertext) + decryptor.finalize()
-        return decrypted
 
+        padded_decrypted_text = decryptor.update(ciphertext) + decryptor.finalize()
+
+        unpadder = sym_padding.PKCS7(128).unpadder()
+        decrypted_text = unpadder.update(padded_decrypted_text) + unpadder.finalize()
+
+        return decrypted_text
 
 def main():
     hybrid = HybridEncryption()
@@ -76,11 +80,27 @@ def main():
     # Шифрование ключа Camellia с использованием RSA
     encrypted_key = hybrid.rsa_encrypt(camellia_key, public_key)
 
-    # Расшифровка ключа Camellia с использованием RSA
+    # Расшифровка ключа amellia с использованием RSA
     decrypted_key = hybrid.rsa_decrypt(encrypted_key, private_key)
-
     # Расшифровка текста с использованием Camellia
     decrypted_text = hybrid.camellia_decrypt(ciphertext, decrypted_key, iv)
 
-if __name__ =="__main__":
+    # Сравнение исходного текста и расшифрованного текста
+    if plaintext == decrypted_text:
+       print("Шифрование и расшифровка прошли успешно!")
+    else:
+        print("Ошибка в процессе шифрования и/или расшифровки.")
+
+# Сохранение зашифрованного текста в файл
+    output_path = input("Введите путь для сохранения зашифрованного текста: ")
+    with open(output_path, "wb") as f:
+        f.write(ciphertext)
+
+# Сохранение расшифрованного текста в файл
+    decrypted_output_path = input("Введите путь для сохранения расшифрованного текста: ")
+    with open(decrypted_output_path, "wb") as f:
+        f.write(decrypted_text)
+
+
+if __name__ == "__main__":
     main()
