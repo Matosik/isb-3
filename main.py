@@ -7,17 +7,29 @@ import time
 
 class HybridEncryption:
     def __init__(self):
-
+        """_Инициализация класса_"""
         self.backend = default_backend()
 
     def generate_rsa_keys(self):
+        """
+        Генерация пары ключей RSA (открытый и закрытый ключ)
 
+        Returns:
+            tuple: private_key, public_key.
+        """
         private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=self.backend)
         public_key = private_key.public_key()
         return private_key, public_key
 
-    def rsa_encrypt(self, plaintext, public_key):
+    def rsa_encrypt(self, plaintext:bytes, public_key):
+        """Шифрование текста с использованием алгоритма RSA.
 
+        Args: 
+            plaintext (bytes): текст для шифрования |
+            public_key (RSAPublicKey): открытый ключ RSA.
+        Returns:
+            bytes: зашифрованный текст.
+        """
         encrypted = public_key.encrypt(
             plaintext,
             asym_padding.OAEP(
@@ -26,9 +38,16 @@ class HybridEncryption:
                 label=None)
         )
         return encrypted
-
-    def rsa_decrypt(self, ciphertext, private_key):
-
+    
+    def rsa_decrypt(self, ciphertext:bytes, private_key):
+        """Расшифровка текста с использованием алгоритма RSA.
+        
+        Args: 
+            ciphertext (bytes): зашифрованный текст
+            private_key (RSAPrivateKey): закрытый ключ RSA.
+        Returns:
+            bytes: расшифрованный текст.
+        """
         decrypted = private_key.decrypt(
             ciphertext,
             asym_padding.OAEP(
@@ -38,8 +57,16 @@ class HybridEncryption:
         )
         return decrypted
 
-    def camellia_encrypt(self, plaintext, key, iv):
+    def camellia_encrypt(self, plaintext:bytes, key:bytes, iv:bytes):
+        """Шифрование текста с использованием алгоритма Camellia.
 
+        Args: 
+            plaintext (bytes): текст для шифрования,
+            key (bytes): ключ Camellia,
+            iv (bytes): вектор инициализации.
+        Returns:
+            bytes: зашифрованный текст
+        """
         cipher = Cipher(algorithms.Camellia(key), modes.CBC(iv), backend=self.backend)
         encryptor = cipher.encryptor()
 
@@ -49,10 +76,21 @@ class HybridEncryption:
         ciphertext = encryptor.update(padded_plaintext) + encryptor.finalize()
         return ciphertext
 
-    def camellia_decrypt(self, ciphertext, key, iv):
+    def camellia_decrypt(self, ciphertext:bytes, key:bytes, iv:bytes):
+        """Расшифровка текста с использованием алгоритма Camellia.
 
+        Args: 
+            ciphertext (bytes) - зашифрованный текст,
+             key (bytes) - ключ Camellia,
+            iv (bytes) - вектор инициализации.
+        Returns:
+            bytes: расшифрованный текст.
+        """
+
+        
         cipher = Cipher(algorithms.Camellia(key), modes.CBC(iv), backend=self.backend)
         decryptor = cipher.decryptor()
+
 
         padded_plaintext = decryptor.update(ciphertext) + decryptor.finalize()
 
@@ -61,10 +99,12 @@ class HybridEncryption:
 
         return plaintext
 
-def main():
+def menu():
+    """Выполняет роль меню"""
     hybrid = HybridEncryption()
     # Генерация пары ключей RSA
     private_key, public_key = hybrid.generate_rsa_keys()
+
 
     # Вывод открытого ключа для пользователя
     pem_public_key = public_key.public_bytes(encoding=serialization.Encoding.PEM,format=serialization.PublicFormat.SubjectPublicKeyInfo)
@@ -104,6 +144,8 @@ def main():
     while(entered_key_hex!=camellia_key.hex()):
         entered_key_hex = input("\nНеверный ключ введите еще раз: ")
     entered_key = bytes.fromhex(entered_key_hex)
+
+
     print("\nОтлично! Ключ принят ожидайте расшифровки текста! ")
     time.sleep(2)
     # Расшифровка ключа Camellia с использованием RSA
@@ -115,6 +157,10 @@ def main():
         print("\nШифрование и расшифровка прошли успешно!")
     else:
         print("\nОшибка в процессе шифрования и/или расшифровки.")
+
+
+
+
 
     # Сохранение зашифрованного текста в файл
     name_path_ciphertext = input("\nВведите имя для файла для зашифрованного текста: ")
@@ -132,11 +178,14 @@ def main():
     else:
         print("\nУпс произошла ошибка, что маловероятно, наверное мой код не идеален, что так же маловероятно, или же сегодня ретроградный меркурий другого не дано *_*")
 
- 
-if __name__ == "__main__": 
+
+
+
+def main():
+    """Повторюшка"""
     flag = True
     while(flag):
-        main()
+        menu()
         ro = input("\nХотите еще раз поиграться с данной программой? да/нет yes/no : ")
         while(ro!= "yes" and ro!="no" and ro!= "да" and ro!="нет"):
             ro = input("\nохххх я же спросил да или нет зачем же писать что-то друое... -_-\nХорошо давайте по новой. да или нет (:  ")
@@ -148,3 +197,6 @@ if __name__ == "__main__":
             print("\nДело сделано... опять работа ?")
             time.sleep(2)
     print("\nКто прочитал у того мама будет жить вечно!")
+ 
+if __name__ == "__main__": 
+    main()
