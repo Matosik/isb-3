@@ -26,7 +26,7 @@ class HybridEncryption:
     def rsa_encrypt(self, plaintext: bytes, public_key):
         """Шифрование текста с использованием алгоритма RSA.
 
-        Args:
+        Args: 
             plaintext (bytes): текст для шифрования |
             public_key (RSAPublicKey): открытый ключ RSA.
         Returns:
@@ -44,7 +44,7 @@ class HybridEncryption:
     def rsa_decrypt(self, ciphertext: bytes, private_key):
         """Расшифровка текста с использованием алгоритма RSA.
 
-        Args:
+        Args: 
             ciphertext (bytes): зашифрованный текст
             private_key (RSAPrivateKey): закрытый ключ RSA.
         Returns:
@@ -62,17 +62,15 @@ class HybridEncryption:
     def camellia_encrypt(self, plaintext: bytes, key: bytes, iv: bytes):
         """Шифрование текста с использованием алгоритма Camellia.
 
-        Args:
+        Args: 
             plaintext (bytes): текст для шифрования,
             key (bytes): ключ Camellia,
             iv (bytes): вектор инициализации.
         Returns:
             bytes: зашифрованный текст
         """
-        cipher = Cipher(
-            algorithms.Camellia(key),
-            modes.CBC(iv),
-            backend=self.backend)
+        cipher = Cipher(algorithms.Camellia(
+            key), modes.CBC(iv), backend=self.backend)
         encryptor = cipher.encryptor()
 
         padder = sym_padding.PKCS7(128).padder()
@@ -84,7 +82,7 @@ class HybridEncryption:
     def camellia_decrypt(self, ciphertext: bytes, key: bytes, iv: bytes):
         """Расшифровка текста с использованием алгоритма Camellia.
 
-        Args:
+        Args: 
             ciphertext (bytes) - зашифрованный текст,
              key (bytes) - ключ Camellia,
             iv (bytes) - вектор инициализации.
@@ -92,10 +90,8 @@ class HybridEncryption:
             bytes: расшифрованный текст.
         """
 
-        cipher = Cipher(
-            algorithms.Camellia(key),
-            modes.CBC(iv),
-            backend=self.backend)
+        cipher = Cipher(algorithms.Camellia(
+            key), modes.CBC(iv), backend=self.backend)
         decryptor = cipher.decryptor()
 
         padded_plaintext = decryptor.update(ciphertext) + decryptor.finalize()
@@ -106,18 +102,15 @@ class HybridEncryption:
         return plaintext
 
 
-def menu():
+def main():
     """Выполняет роль меню"""
     hybrid = HybridEncryption()
     # Генерация пары ключей RSA
     private_key, public_key = hybrid.generate_rsa_keys()
-
     # Вывод открытого ключа для пользователя
     pem_public_key = public_key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo)
     print(f"Открытый ключ RSA:\n{pem_public_key.decode('utf-8')}")
-
     # Чтение текста из файла
     input_path = input("Введите путь до файла с текстом: ")
     while not os.path.isfile(os.path.join(input_path)):
@@ -125,11 +118,9 @@ def menu():
             "\nА теперь введи, пожалуйста, нормальный путь до файла, а не абракадабру ^_^:")
     with open(input_path, "rb") as f:
         plaintext = f.read()
-
     # Выбор ключа Camellia
     key_length = input("\nВыберите длину ключа Camellia (128, 192, 256): ")
-    while (key_length != "128" and key_length !=
-           "192" and key_length != "256"):
+    while (key_length != "128" and key_length != "192" and key_length != "256"):
         key_length = input(
             "Нет нет нет так не пойдет... Camellia использует размер ключа 128, 192 или 256 бит так, что выберете один из 3 доспупных: ")
     key_length = int(key_length)
@@ -156,7 +147,6 @@ def menu():
     while (entered_key_hex != camellia_key.hex()):
         entered_key_hex = input("\nНеверный ключ введите еще раз: ")
     entered_key = bytes.fromhex(entered_key_hex)
-
     print("\nОтлично! Ключ принят ожидайте расшифровки текста! ")
     time.sleep(2)
     # Расшифровка ключа Camellia с использованием RSA
@@ -188,11 +178,11 @@ def menu():
         print("\nУпс произошла ошибка, что маловероятно, наверное мой код не идеален, что так же маловероятно, или же сегодня ретроградный меркурий другого не дано *_*")
 
 
-def main():
+def menu():
     """Повторюшка"""
     flag = True
     while (flag):
-        menu()
+        main()
         ro = input(
             "\nХотите еще раз поиграться с данной программой? да/нет yes/no : ")
         while (ro != "yes" and ro != "no" and ro != "да" and ro != "нет"):
@@ -209,4 +199,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    menu()
