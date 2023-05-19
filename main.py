@@ -16,7 +16,7 @@ class Window_main(QMainWindow):
         self.setWindowTitle('Camellia')
         self.setFixedSize(600, 400)
         self.background = QLabel(self)
-        self.background.setGeometry(0, 0, 600, 400)
+        self.background.setGeometry(0, 0, 600, 600)
         self.background.setStyleSheet("background-color: #B0E0E6;")
 
         self.info = QLabel(self)
@@ -51,19 +51,33 @@ class Window_main(QMainWindow):
         self.decryption_button.clicked.connect(self.decryption)
         self.decryption_button.hide()
         
+        self.selection_button =QPushButton('Selection key in folder', self)
+        self.selection_button.setStyleSheet(' border-radius: 15%; background-color: #FFFFF0 ; border: 2px solid black;')
+        self.selection_button.setGeometry(200, 300, 200, 50)
+        self.selection_button.clicked.connect(self.selection_folder_with_keys)
+        self.selection_button.hide()
         self.message = QLabel(self)
         self.message.setGeometry(244, 265, 200, 50)
         self.show()
 
+    def selection_folder_with_keys(self):
+        """selection keys if geys already have
+        """
+        way = str(QFileDialog.getExistingDirectory(
+            caption='Select the directory where the keys are already located '))
+        self.key = Hybrid_Cryptosystem(self.size, way)
+        self.decryption_button.show()
+        self.enycryption_button.show()
     def size_selection(self, text: str) -> None:
         """
         The function assigns the size of the key
         Args:
             text (str): строка которую из которой выбрали нужный ключ
         """
-        self.size = int(re.findall('(\d+)', text)[0])
+        self.size = int(re.findall('(\d+)', text)[0])//8
         self.info.setText("Generate the keys")
         self.button_keys.show()
+        self.selection_button.show()
 
     def generation_key(self) -> None:
         """
@@ -72,7 +86,7 @@ class Window_main(QMainWindow):
         way = str(QFileDialog.getExistingDirectory(
             caption='Selecting a directory'))
         self.key = Hybrid_Cryptosystem(self.size, way)
-        self.key.generation_key()
+        self.key.generate_keys()
         self.info.setText("Keys generated successfully")
         self.message.setText("Please encrypt the text")
         self.decryption_button.show()
