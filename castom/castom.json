@@ -1,0 +1,9 @@
+{
+    "text": "",
+    "encrypted_file": "./castom/code_castom_text.txt",
+    "decrypted_file": "./castom/decode_castom_text.txt",
+    "symmetric_key": "./castom/symmetric_key.txt",
+    "public_key": "./castom/public_key.txt",
+    "iv_path": "./castom/iv_path.txt",
+    "secret_key": "./castom/secret_key.txt"
+}

@@ -1,5 +1,4 @@
 import logging
-import os
 
 from symmetric import SymmetricEncryption
 from assymmetric import AsymmetricEncryption
@@ -8,16 +7,16 @@ logging.basicConfig(level="DEBUG")
 logger = logging.getLogger()
 
 
-class Hybrid_Cryptosystem:
-    def __init__(self, size: int, way: str) -> None:
+class Cryptosystem:
+    def __init__(self, size: int, setting) -> None:
         """
         Initiation function
         Args:
             size (int): size key
-            way (str): path for a key
+            way (str): path for a keys
         """
-        self.symmetric_encryption = SymmetricEncryption(size, way)
-        self.asymmetric_encryption = AsymmetricEncryption(size, way)
+        self.symmetric_encryption = SymmetricEncryption(size,  setting)
+        self.asymmetric_encryption = AsymmetricEncryption(size, setting)
 
     def generate_keys(self) -> None:
         """
@@ -25,13 +24,13 @@ class Hybrid_Cryptosystem:
         """
         self.asymmetric_encryption.generation_key()
 
-    def encryption(self, way: str) -> None:
+    def encryption(self) -> None:
         """
         Encryption function
         Args:
             way (str): path for a text
         """
-        self.symmetric_encryption.encryption(way)
+        self.symmetric_encryption.encryption()
 
     def decryption(self) -> str:
         """
@@ -39,4 +38,4 @@ class Hybrid_Cryptosystem:
         Returns:
             str: path to the decrypted file
         """
-        return self.symmetric_encryption.decryption()
+        self.symmetric_encryption.decryption()

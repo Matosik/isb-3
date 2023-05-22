@@ -1,10 +1,10 @@
 import re
 import sys
-
+import json
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QApplication, QLabel, QMainWindow, QPushButton, QFileDialog)
-from cryptosystem import Hybrid_Cryptosystem
+from cryptosystem import Cryptosystem
 
 
 class Window_main(QMainWindow):
@@ -15,10 +15,12 @@ class Window_main(QMainWindow):
         super(Window_main, self).__init__()
         self.setWindowTitle('Camellia')
         self.setFixedSize(600, 400)
+        self.size = 16
         self.background = QLabel(self)
         self.background.setGeometry(0, 0, 600, 600)
         self.background.setStyleSheet("background-color: #B0E0E6;")
-
+        with open("setting.json") as json_file:
+            self.setting = json.load(json_file)
         self.info = QLabel(self)
         self.info.setText('Selection size key')
         self.info.setGeometry(225, 15, 500, 50)
@@ -51,23 +53,15 @@ class Window_main(QMainWindow):
         self.decryption_button.clicked.connect(self.decryption)
         self.decryption_button.hide()
         
-        self.selection_button =QPushButton('Selection key in folder', self)
-        self.selection_button.setStyleSheet(' border-radius: 15%; background-color: #FFFFF0 ; border: 2px solid black;')
-        self.selection_button.setGeometry(200, 300, 200, 50)
-        self.selection_button.clicked.connect(self.selection_folder_with_keys)
+        self.selection_button =QPushButton('Selection castom json \nfrom which the program will retrieve your data', self)
+        self.selection_button.setStyleSheet(' border-radius: 15%; background-color: #FF0040 ; border: 2px solid black;')
+        self.selection_button.setGeometry(190, 320, 250, 70)
+        self.selection_button.clicked.connect(self.castom_json)
         self.selection_button.hide()
         self.message = QLabel(self)
         self.message.setGeometry(244, 265, 200, 50)
         self.show()
 
-    def selection_folder_with_keys(self):
-        """selection keys if geys already have
-        """
-        way = str(QFileDialog.getExistingDirectory(
-            caption='Select the directory where the keys are already located '))
-        self.key = Hybrid_Cryptosystem(self.size, way)
-        self.decryption_button.show()
-        self.enycryption_button.show()
     def size_selection(self, text: str) -> None:
         """
         The function assigns the size of the key
@@ -79,40 +73,50 @@ class Window_main(QMainWindow):
         self.button_keys.show()
         self.selection_button.show()
 
+    def castom_json(self):
+        """ Selection castom json file
+        """
+        try:
+            options = QFileDialog.Options()
+            CONFIG, _= QFileDialog.getOpenFileName(self, "Selection JSON file", "", "JSON Files (*.json)", options=options)
+            with open(CONFIG) as json_file:
+                self.setting = json.load(json_file)
+            self.key = Cryptosystem(self.size, self.setting)
+            self.decryption_button.show()
+            self.enycryption_button.show()
+        except:
+            self.info.setText("Deselecting")
+        
     def generation_key(self) -> None:
         """
         The function generates keys and shows 2 buttons(encryption,decryption)
         """
-        way = str(QFileDialog.getExistingDirectory(
-            caption='Selecting a directory'))
-        self.key = Hybrid_Cryptosystem(self.size, way)
+        self.key = Cryptosystem(self.size, self.setting)
         self.key.generate_keys()
         self.info.setText("Keys generated successfully")
         self.message.setText("Please encrypt the text")
-        self.decryption_button.show()
         self.enycryption_button.show()
 
     def encryption(self) -> None:
         """
         Encryption function
         """
-        way_e = str(QFileDialog.getOpenFileName(
-            caption='Select the file for encrypted in txt format', filter='*.txt'))
-        way_e = way_e.split('\'')[1]
-        self.key.encryption(way_e)
+        self.key.encryption()
         self.info.setText("The text is encrypted")
         self.message.setText("Decipher the text")
+        self.decryption_button.show()
 
     def decryption(self) -> None:
         """
         Decoding function
         """
-        way = self.key.decryption()
+        self.key.decryption()
         self.info.setText("The text decrypted successfully")
-        self.message.setGeometry(155, 280, 600, 30)
-        self.message.setText(
-            f"\tThe decrypted text is located at this path:\n{way}")
-
+        self.message.setText("")
+        self.selection_button.hide()
+        self.button_keys.hide()
+        self.enycryption_button.hide()
+        self.decryption_button.hide()
 
 def application() -> None:
     """
@@ -122,7 +126,6 @@ def application() -> None:
     window = Window_main()
     window.show()
     sys.exit(app.exec_())
-
 
 if __name__ == "__main__":
     application()

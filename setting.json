@@ -1,0 +1,9 @@
+{
+    "text": "./Texts/MH.txt",
+    "encrypted_file": "./keys/encryption_text.txt",
+    "decrypted_file": "./keys/decrypted_text.txt",
+    "symmetric_key": "./keys/symmetric_key.txt",
+    "public_key": "./keys/public_key.txt",
+    "iv_path": "./keys/iv_path.txt",
+    "secret_key": "./keys/secret_key.txt"
+}
